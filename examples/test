@@ -1,0 +1,4 @@
+prove C(x) |- A(x) => B(x) => A(x)
+impl_i
+impl_i
+axiom

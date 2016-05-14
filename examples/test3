@@ -1,0 +1,4 @@
+prove A(X,Y) |- exists x, exists y, A(x,y)
+exists_i X
+exists_i Y
+axiom

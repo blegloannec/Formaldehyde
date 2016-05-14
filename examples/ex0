@@ -1,0 +1,9 @@
+prove |- (A /\ B => C) => (A => B => C)
+impl_i
+impl_i
+impl_i
+impl_e A /\ B
+axiom
+and_i
+axiom
+axiom

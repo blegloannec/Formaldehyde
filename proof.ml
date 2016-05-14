@@ -136,22 +136,88 @@ let exists_i : term -> sequent -> sequent list = fun t -> function
   | hyp,BExists(0,a) -> [(hyp, index_decr t a)]
   | _ -> failwith "exists_i"
      
-let exists_e : formula -> sequent -> sequent list = fun a (hyp,c) ->
-  match a with
+let exists_e : formula -> sequent -> sequent list = fun ea (hyp,c) ->
+  match ea with
     BExists (0,b) ->
       let fid = fresh_free_name (free_vars (c::hyp)) in
-      [(hyp,a); ((index_decr (Var fid) a)::hyp,c)]
+      [(hyp,ea); ((index_decr (Var fid) ea)::hyp,c)]
   | _ -> failwith "exists_e"
+
+let rec term_sub_check : term -> term -> (bool * (term option)) = fun s1 s2 ->
+  match s1,s2 with
+    BVar 0, t2 -> (true, Some t2)
+  | BVar n1, BVar n2 when n1=n2 -> (true, None)
+  | Func (id1,tl1), Func (id2,tl2) when id1=id2 -> terml_sub_check tl1 tl2
+  | _ -> (false, None)
+
+and terml_sub_check : term list -> term list -> (bool * (term option)) = fun tl1 tl2 ->
+  match tl1,tl2 with
+  | h1::t1, h2::t2 ->
+     begin
+       let r0 = term_sub_check h1 h2 and r = terml_sub_check t1 t2 in
+       match r0,r with
+	 (true, Some t1), (true, Some t2) when t1=t2 -> r0
+       | (true, None), (true, _) -> r
+       | (true, _), (true, None) -> r0
+       | _ -> (false, None)
+     end
+  | [],[] -> (true, None)
+  | _ -> (false, None)
+  
+     
+let rec sub_check : formula -> formula -> (bool * (term option)) = fun f1 f2 ->
+  match f1,f2 with
+  | Pred (id1,tl1), Pred(id2,tl2) when id1=id2 -> terml_sub_check tl1 tl2
+  | Bot,Bot -> (true, None)
+  | Or (a1,b1), Or (a2,b2) ->
+     begin
+       let r1 = sub_check a1 a2 and r2 = sub_check b1 b2 in
+       match r1,r2 with
+	 (true, Some t1), (true, Some t2) when t1=t2 -> r1
+       | (true, None), (true, _) -> r2
+       | (true, _), (true, None) -> r1
+       | _ -> (false, None)
+     end
+  | And (a1,b1), And (a2,b2) ->
+     begin
+       let r1 = sub_check a1 a2 and r2 = sub_check b1 b2 in
+       match r1,r2 with
+	 (true, Some t1), (true, Some t2) -> if t1=t2 then r1 else (false,None)
+       | (true, None), (true, _) -> r2
+       | (true, _), (true, None) -> r1
+       | _ -> (false, None)
+     end
+  | Impl (a1,b1), Impl (a2,b2) ->
+     begin
+       let r1 = sub_check a1 a2 and r2 = sub_check b1 b2 in
+       match r1,r2 with
+	 (true, Some t1), (true, Some t2) -> if t1=t2 then r1 else (false,None)
+       | (true, None), (true, _) -> r2
+       | (true, _), (true, None) -> r1
+       | _ -> (false, None)
+     end
+  | Not a1, Not a2 -> sub_check a1 a2
+  | Forall (id1,a1), Forall (id2, a2) when id1=id2 -> sub_check a1 a2
+  | Exists (id1,a1), Exists (id2,a2) when id1=id2 -> sub_check a1 a2
+  | _ -> (false,None)
+     
+let forall_e : formula -> sequent -> sequent list = fun fa (hyp,a) ->
+  match fa with
+    BForall (0,a0) when (fst (sub_check a0 a)) -> [(hyp,fa)]
+  | _ -> failwith "forall_e"
 
 
 (* === Proof assistant interface === *)
-let lexbuf = Lexing.from_channel stdin     
+let pipein = not (Unix.isatty Unix.stdin)
+let lexbuf = Lexing.from_channel stdin
 let read_command : unit -> command = fun () ->
   try
-    Parser.main Lexer.token lexbuf
+    let com = Parser.main Lexer.token lexbuf in
+    if pipein then Printf.printf "%s\n" (string_of_command com);
+    com
   with
-    Parsing.Parse_error -> print_endline "glop"; Invalid
-  | Lexer.Eof -> print_endline "exiting"; exit 0
+    Parsing.Parse_error -> print_endline "parse error"; Invalid
+  | Lexer.Eof -> print_endline "eof exiting"; exit 0
 
 let rec prove : sequent list -> unit = function
   | h::t ->
@@ -171,16 +237,17 @@ let rec prove : sequent list -> unit = function
        | Not_i -> prove ((not_i h)@t)
        | Not_e a -> prove ((not_e (dbix a) h)@t)
        | Forall_i -> prove ((forall_i h)@t)
+       | Forall_e a -> prove ((forall_e (dbix a) h)@t)
        | Exists_i s -> prove ((exists_i s h)@t)
-       | Exists_e a -> prove ((exists_e a h)@t)
-       | _ -> failwith "not implemented"
+       | Exists_e a -> prove ((exists_e (dbix a) h)@t)
+       | Absurd ->  prove ((absurd h)@t)
+       | Prove _ -> failwith "finish the current proof first"
+       | _ -> failwith "invalid command"
      end
   | [] -> print_endline "done"
 
-(*let _ = prove [([Pred ("A",[]); Pred ("B",[])], And (Pred ("A",[]),Pred ("B",[])))]*)
 
-(*let _ = prove [([], Impl (Pred ("A",[]), Impl (Pred ("B",[]),Pred ("A",[]))))]*)
-
+(* === Main === *)
 let _ =
   while true do
     print_string "> "; flush stdout;

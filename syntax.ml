@@ -37,7 +37,7 @@ type command =
   | Not_e of formula
   | Absurd
   | Forall_i
-  | Forall_e of term
+  | Forall_e of formula
   | Exists_i of term
   | Exists_e of formula
   | Prove of sequent
@@ -89,3 +89,23 @@ and string_of_formula_list : formula list -> string = function
      
 let string_of_sequent : sequent -> string = fun (hyp,a) ->
   Printf.sprintf "%s |- %s" (string_of_formula_list hyp) (string_of_formula a)
+
+let string_of_command : command -> string = function
+    Axiom -> Printf.sprintf "axiom"
+  | Impl_i -> Printf.sprintf "impl_i"
+  | Impl_e a -> Printf.sprintf "impl_e %s" (string_of_formula a)
+  | And_i -> Printf.sprintf "and_i"
+  | And_e_l a -> Printf.sprintf "and_e_l %s" (string_of_formula a)
+  | And_e_r a -> Printf.sprintf "and_e_r %s" (string_of_formula a)
+  | Or_i_l -> Printf.sprintf "or_i_l"
+  | Or_i_r -> Printf.sprintf "or_i_r"
+  | Or_e (a,b) -> Printf.sprintf "or_e %s %s" (string_of_formula a) (string_of_formula b)
+  | Not_i -> Printf.sprintf "axiom"
+  | Not_e a -> Printf.sprintf "not_e %s" (string_of_formula a)
+  | Absurd -> Printf.sprintf "absurd"
+  | Forall_i -> Printf.sprintf "forall_i"
+  | Forall_e a -> Printf.sprintf "forall_e %s" (string_of_formula a)
+  | Exists_i t -> Printf.sprintf "exists_i %s" (string_of_term t)
+  | Exists_e a -> Printf.sprintf "exists_e %s" (string_of_formula a)
+  | Prove s -> Printf.sprintf "prove %s" (string_of_sequent s)
+  | Invalid -> Printf.sprintf "invalid"

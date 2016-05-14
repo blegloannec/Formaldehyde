@@ -1,0 +1,12 @@
+prove |- ((forall x, A) \/ (forall x, B)) => forall x, A \/ B
+impl_i
+or_e (forall x, A) (forall x, B)
+axiom
+forall_i
+or_i_l
+forall_e (forall x, A)
+axiom
+forall_i
+or_i_r
+forall_e (forall x, B)
+axiom

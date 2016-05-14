@@ -71,7 +71,7 @@ command:
   | NOTE form         { Not_e $2 }
   | ABSURD            { Absurd }
   | FORALLI           { Forall_i }
-  | FORALLE term      { Forall_e $2 }
+  | FORALLE form      { Forall_e $2 }
   | EXISTSI term      { Exists_i $2 }
   | EXISTSE form      { Exists_e $2 }
   | PROVE sequent     { Prove $2 }

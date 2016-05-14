@@ -1,0 +1,13 @@
+prove |- (C -> A) \/ (C -> B) -> (C -> A \/ B)
+impl_i
+impl_i
+or_e C -> A C -> B
+axiom
+or_i_l
+impl_e C
+axiom
+axiom
+or_i_r
+impl_e C
+axiom
+axiom
