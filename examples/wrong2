@@ -1,0 +1,8 @@
+prove |- (forall x, A(x) \/ B(x)) => (forall x, A(x)) \/ (forall x, B(x))
+impl_i
+or_e A(x) B(x)
+forall_e (forall x, A(x) \/ B(x))
+axiom
+or_i_l
+forall_i
+axiom

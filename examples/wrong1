@@ -1,0 +1,8 @@
+prove |- ((exists x, A(x)) /\ (exists x, B(x))) -> (exists x, (A(x) /\ B(x)))
+impl_i
+exists_i a
+and_i
+exists_e exists x, A(x)
+and_e_l (exists x, B(x))
+axiom
+axiom

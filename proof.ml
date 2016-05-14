@@ -140,7 +140,7 @@ let exists_e : formula -> sequent -> sequent list = fun ea (hyp,c) ->
   match ea with
     BExists (0,b) ->
       let fid = fresh_free_name (free_vars (c::hyp)) in
-      [(hyp,ea); ((index_decr (Var fid) ea)::hyp,c)]
+      [(hyp,ea); ((index_decr (Var fid) b)::hyp,c)]
   | _ -> failwith "exists_e"
 
 let rec term_sub_check : term -> term -> (bool * (term option)) = fun s1 s2 ->

@@ -1,0 +1,11 @@
+prove |- (exists x, A /\ B) => ((exists x, A) /\ (exists x, B))
+impl_i
+exists_e (exists x, A /\ B)
+axiom
+and_i
+exists_i x
+and_e_l B
+axiom
+exists_i x
+and_e_r A
+axiom

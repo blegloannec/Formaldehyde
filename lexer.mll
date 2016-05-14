@@ -14,6 +14,7 @@ rule token = parse
      | ','			 { COMMA }
      | ';'			 { SEMICOLON }
      | "_|_"                     { BOTTOM }
+     | "not" | '!' | '~'         { NOT }
      | "forall"                  { FORALL }
      | "exists"                  { EXISTS }
      | "|-"                      { THESIS }

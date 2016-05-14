@@ -1,0 +1,6 @@
+prove |- (exists x, A(x)) => (forall x, A(x))
+impl_i
+forall_i
+exists_e (exists x, A(x))
+axiom
+axiom
