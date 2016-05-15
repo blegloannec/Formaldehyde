@@ -1,6 +1,7 @@
 open Syntax
 
-type proof = Rule of sequent * (proof list)
+type label = string
+type proof = Rule of sequent * label * (proof list)
 
     
 (* === LaTeX proof package proof tree export === *)
@@ -36,7 +37,7 @@ let latex_of_sequent : sequent -> string = fun (hyp,a) ->
   Printf.sprintf "%s \\vdash %s" (latex_of_formula_list hyp) (latex_of_formula a)
 
 let rec latex_of_proof : proof -> string = function
-  | Rule (s,pl) -> Printf.sprintf "\\infer{%s}{%s}\n" (latex_of_sequent s) (latex_of_proof_list pl)
+  | Rule (s,lab,pl) -> Printf.sprintf "\\infer[\\scriptstyle %s]{%s}{%s}\n" lab (latex_of_sequent s) (latex_of_proof_list pl)
 
 and latex_of_proof_list : proof list -> string = function
   | [h] -> latex_of_proof h
@@ -47,6 +48,7 @@ let export_proof : string -> proof -> unit = fun fn p ->
   let f = open_out fn in
   Printf.fprintf f "\\documentclass[border=1mm]{standalone}\n";
   Printf.fprintf f "\\usepackage{proof}\n";
+  Printf.fprintf f "\\inferLabelSkip=3pt\n";
   Printf.fprintf f "\\begin{document}\n";
   Printf.fprintf f "$%s$\n" (latex_of_proof p);
   Printf.fprintf f "\\end{document}\n";

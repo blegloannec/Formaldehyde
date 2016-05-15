@@ -9,7 +9,7 @@ open Syntax
 %token AXIOM IMPLI IMPLE ANDI ANDEL ANDER
 %token ORIL ORIR ORE NOTI NOTE ABSURD
 %token FORALLI FORALLE EXISTSI EXISTSE
-%token PROVE
+%token PROVE EXPORT LISTENV
 %token EOL
 %right IMPL
 %right OR
@@ -75,4 +75,6 @@ command:
   | EXISTSI term      { Exists_i $2 }
   | EXISTSE form      { Exists_e $2 }
   | PROVE sequent     { Prove $2 }
+  | EXPORT MINNAME    { Export $2 }
+  | LISTENV           { Listenv }
 ;

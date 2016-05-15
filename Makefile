@@ -1,4 +1,4 @@
-SOURCES = syntax.ml lexer.mll parser.mly mgmt.ml nk.ml proof.ml formol.ml #parse_test.ml
+SOURCES = syntax.ml lexer.mll parser.mly mgmt.ml nk.ml proof.ml env.ml formol.ml #parse_test.ml
 LIBS = unix
 RESULT = formol
 

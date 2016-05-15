@@ -35,6 +35,8 @@ rule token = parse
      | "exists_i"                { EXISTSI }
      | "exists_e"                { EXISTSE }
      | "prove"                   { PROVE }
+     | "export"                  { EXPORT }
+     | "list"                    { LISTENV }
      | ['a'-'z']['a'-'z' 'A'-'Z' '0'-'9']* as lxm { MINNAME lxm }
      | ['A'-'Z']['a'-'z' 'A'-'Z' '0'-'9']* as lxm { MAJNAME lxm }
      | eof			 { raise Eof }

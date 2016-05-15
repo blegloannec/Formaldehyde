@@ -1,0 +1,11 @@
+prove C |- A => B => A
+impl_i
+impl_i
+axiom
+prove |- A => (A => B) => B
+impl_i
+impl_i
+impl_e A
+axiom
+axiom
+list

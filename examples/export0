@@ -1,0 +1,17 @@
+prove |- ~(A /\ B) => ((~A) \/ (~B))
+impl_i
+absurd
+not_e (~A) \/ (~B)
+axiom
+or_i_l
+not_i
+not_e (~A) \/ (~B)
+axiom
+or_i_r
+not_i
+not_e A /\ B
+axiom
+and_i
+axiom
+axiom
+export th1

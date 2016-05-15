@@ -41,6 +41,8 @@ type command =
   | Exists_i of term
   | Exists_e of formula
   | Prove of sequent
+  | Export of string
+  | Listenv
   | Invalid
 
 type scope = (var_id * bvar_id) list
@@ -108,4 +110,6 @@ let string_of_command : command -> string = function
   | Exists_i t -> Printf.sprintf "exists_i %s" (string_of_term t)
   | Exists_e a -> Printf.sprintf "exists_e %s" (string_of_formula a)
   | Prove s -> Printf.sprintf "prove %s" (string_of_sequent s)
+  | Export tid -> Printf.sprintf "export %s" tid
+  | Listenv -> Printf.sprintf "list"
   | Invalid -> Printf.sprintf "invalid"
