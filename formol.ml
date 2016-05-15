@@ -1,6 +1,7 @@
 open Syntax
 open Mgmt
 open Nk
+open Proof
 
 
 (* === Proof assistant interface === *)
@@ -12,42 +13,40 @@ let read_command : unit -> command = fun () ->
     if pipein then Printf.printf "%s\n" (string_of_command com);
     com
   with
-    Parsing.Parse_error -> print_endline "parse error"; Invalid
-  | Lexer.Eof -> print_endline "eof exiting"; exit 0
+    Parsing.Parse_error -> Printf.eprintf "Error: Parsing error\n"; Invalid
+  | Lexer.Eof -> Printf.eprintf "EOF exit\n"; exit 0
 
-let rec prove : sequent list -> unit = function
-  | h::t ->
-     begin
-       Printf.printf "Current goal: %s\n" (string_of_sequent h);
-       print_string "> "; flush stdout;
-       match (read_command ()) with
-         Axiom -> prove ((axiom h)@t)
-       | Impl_i -> prove ((impl_i h)@t)
-       | Impl_e a -> prove ((impl_e (dbix a) h)@t)
-       | And_i -> prove ((and_i h)@t)
-       | And_e_l a -> prove ((and_e_l (dbix a) h)@t)
-       | And_e_r a -> prove ((and_e_r (dbix a) h)@t)
-       | Or_i_l -> prove ((or_i_l h)@t)
-       | Or_i_r -> prove ((or_i_r h)@t)
-       | Or_e (a,b) -> prove ((or_e (dbix a) (dbix b) h)@t)
-       | Not_i -> prove ((not_i h)@t)
-       | Not_e a -> prove ((not_e (dbix a) h)@t)
-       | Forall_i -> prove ((forall_i h)@t)
-       | Forall_e a -> prove ((forall_e (dbix a) h)@t)
-       | Exists_i s -> prove ((exists_i s h)@t)
-       | Exists_e a -> prove ((exists_e (dbix a) h)@t)
-       | Absurd ->  prove ((absurd h)@t)
-       | Prove _ -> failwith "finish the current proof first"
-       | _ -> failwith "invalid command"
-     end
-  | [] -> print_endline "done"
+let rec prove : sequent -> proof = fun h ->
+  Printf.printf "Current goal: %s\n" (string_of_sequent h);
+  Printf.printf "> "; flush stdout;
+  match (read_command ()) with
+    Axiom -> Rule (h, List.map prove (axiom h))
+  | Impl_i -> Rule (h, List.map prove (impl_i h))
+  | Impl_e a -> Rule (h, List.map prove (impl_e (dbix a) h))
+  | And_i -> Rule (h, List.map prove (and_i h))
+  | And_e_l a -> Rule (h, List.map prove (and_e_l (dbix a) h))
+  | And_e_r a -> Rule (h, List.map prove (and_e_r (dbix a) h))
+  | Or_i_l -> Rule (h, List.map prove (or_i_l h))
+  | Or_i_r -> Rule (h, List.map prove (or_i_r h))
+  | Or_e (a,b) -> Rule (h, List.map prove (or_e (dbix a) (dbix b) h))
+  | Not_i -> Rule (h, List.map prove (not_i h))
+  | Not_e a -> Rule (h, List.map prove (not_e (dbix a) h))
+  | Forall_i -> Rule (h, List.map prove (forall_i h))
+  | Forall_e a -> Rule (h, List.map prove (forall_e (dbix a) h))
+  | Exists_i s -> Rule (h, List.map prove (exists_i s h))
+  | Exists_e a -> Rule (h, List.map prove (exists_e (dbix a) h))
+  | Absurd -> Rule (h, List.map prove (absurd h))
+  | Prove _ -> Printf.eprintf "Error: invalid command here\n"; prove h
+  | _ -> Printf.eprintf "Error: invalid command here\n"; prove h
 
 
 (* === Main === *)
 let _ =
   while true do
-    print_string "> "; flush stdout;
+    Printf.printf "> "; flush stdout;
     match (read_command ()) with
-      Prove s -> prove [(sequent_de_bruijn_index s)]
-    | _ -> print_endline "No!"
+      Prove s ->
+	export_proof "out.tex" (prove (sequent_de_bruijn_index s));
+	Printf.printf "Proof done\n"
+    | _ -> Printf.eprintf "Error: Invalid command here\n"
   done
