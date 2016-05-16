@@ -40,6 +40,7 @@ type command =
   | Forall_e of formula
   | Exists_i of term
   | Exists_e of formula
+  | Apply of string
   | Prove of sequent
   | Export of string
   | Listenv
@@ -57,6 +58,9 @@ let scope_push : scope -> var_id -> scope = fun s id ->
 let scope_find : scope -> var_id -> bvar_id option = fun s id ->
   try Some (List.assoc id s)
   with Not_found -> None
+
+let sublist : 'a list -> 'a list -> bool = fun l1 l2 ->
+  List.for_all (fun x -> List.mem x l2) l1
 
 
 (* === Printing functions === *)
@@ -102,13 +106,14 @@ let string_of_command : command -> string = function
   | Or_i_l -> Printf.sprintf "or_i_l"
   | Or_i_r -> Printf.sprintf "or_i_r"
   | Or_e (a,b) -> Printf.sprintf "or_e %s %s" (string_of_formula a) (string_of_formula b)
-  | Not_i -> Printf.sprintf "axiom"
+  | Not_i -> Printf.sprintf "not_i"
   | Not_e a -> Printf.sprintf "not_e %s" (string_of_formula a)
   | Absurd -> Printf.sprintf "absurd"
   | Forall_i -> Printf.sprintf "forall_i"
   | Forall_e a -> Printf.sprintf "forall_e %s" (string_of_formula a)
   | Exists_i t -> Printf.sprintf "exists_i %s" (string_of_term t)
   | Exists_e a -> Printf.sprintf "exists_e %s" (string_of_formula a)
+  | Apply tid -> Printf.sprintf "apply %s" tid
   | Prove s -> Printf.sprintf "prove %s" (string_of_sequent s)
   | Export tid -> Printf.sprintf "export %s" tid
   | Listenv -> Printf.sprintf "list"

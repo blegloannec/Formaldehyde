@@ -34,6 +34,7 @@ rule token = parse
      | "forall_e"                { FORALLE }
      | "exists_i"                { EXISTSI }
      | "exists_e"                { EXISTSE }
+     | "apply"                   { APPLY }
      | "prove"                   { PROVE }
      | "export"                  { EXPORT }
      | "list"                    { LISTENV }

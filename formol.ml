@@ -6,20 +6,26 @@ open Env
 
 
 (* === Proof assistant interface === *)
+let eprintf s = Printf.eprintf s; flush stderr
+
 let pipein = not (Unix.isatty Unix.stdin)
 let lexbuf = Lexing.from_channel stdin
 let read_command : unit -> command = fun () ->
   try
     let com = Parser.main Lexer.token lexbuf in
-    if pipein then Printf.printf "%s\n" (string_of_command com);
+    if pipein then begin
+      Printf.printf "%s\n" (string_of_command com);
+      flush stdout
+    end;
     com
   with
-    Parsing.Parse_error -> Printf.eprintf "Error: Parsing error\n"; Invalid
-  | Lexer.Eof -> Printf.eprintf "EOF exit\n"; exit 0
+    Parsing.Parse_error -> eprintf "Error: Parsing error\n"; Invalid
+  | Lexer.Eof -> eprintf "EOF exit\n"; exit 0
+
 
 let rec prove : sequent -> proof = fun h ->
   Printf.printf "Current goal: %s\n" (string_of_sequent h);
-  Printf.printf "> "; flush stdout;
+  Printf.printf "> "; flush stdout; flush stderr;
   match (read_command ()) with
     Axiom -> Rule (h, "\\textrm{\\small ax}", List.map prove (axiom h))
   | Impl_i -> Rule (h, "\\Rightarrow_i", List.map prove (impl_i h))
@@ -37,9 +43,24 @@ let rec prove : sequent -> proof = fun h ->
   | Exists_i s -> Rule (h, "\\exists_i", List.map prove (exists_i s h))
   | Exists_e a -> Rule (h, "\\exists_e", List.map prove (exists_e (dbix a) h))
   | Absurd -> Rule (h, "\\bot_c", List.map prove (absurd h))
-  | Invalid -> Printf.eprintf "Error: invalid command\n"; prove h
-  | _ -> Printf.eprintf "Error: invalid command here\n"; prove h
+  | Apply tid -> apply_thm tid h
+  | Invalid -> eprintf "Error: invalid command\n"; prove h
+  | _ -> eprintf "Error: invalid command here\n"; prove h
 
+and apply_thm : thm_id -> sequent -> proof = fun tid s ->
+  let hyp,a = s in
+  match env_get tid with
+    Some ((thyp,c),_) ->
+      if c<>a then begin
+	eprintf "Error: Theorem not found\n";
+	prove s
+      end
+      else if not (sublist thyp hyp) then begin
+	eprintf "Error: Hypothesis not satisfied\n";
+	prove s
+      end
+      else Rule (s, Printf.sprintf "\\textrm{\\small %s}" tid, [])
+  | None -> eprintf "Error: Theorem not found\n"; prove s
 
 
 (* === Main === *)
@@ -59,8 +80,8 @@ let _ =
 	     let fn = Printf.sprintf "%s.tex" tid in
 	     export_proof (Printf.sprintf "%s.tex" tid) p;
 	     Printf.printf "Proof exported to %s\n" fn
-	 | None -> Printf.eprintf "Error: Theorem not found\n"
+	 | None -> eprintf "Error: Theorem not found\n"
        end
     | Listenv -> print_env ()
-    | _ -> Printf.eprintf "Error: Invalid command here\n"
+    | _ -> eprintf "Error: Invalid command here\n"
   done

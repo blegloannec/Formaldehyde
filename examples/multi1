@@ -1,0 +1,7 @@
+prove C |- A => B => A
+impl_i
+impl_i
+axiom
+prove D |- C => A => B => A
+impl_i
+apply th1
